@@ -14,7 +14,6 @@ const list = [
   "History",
   "Economics",
   "Sadhguru",
-  "Puppies",
 ];
 const ButtonList = () => {
   return (
