@@ -1,9 +1,34 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { toggleMenu } from "../utils/appSlice";
+import { YOUTUBE_SEARCH_API } from "../utils/config";
 
 const Header = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [suggetsions, setSuggetsions] = useState([]);
+  const [showSuggetsions, setShowSuggetsions] = useState(false);
+
+  useEffect(() => {
+    console.log(searchQuery);
+    //make an API call after every key press
+    //but if the difference between 2 API calls is <200ms
+    //decline the API call
+    const timer = setTimeout(() => getSearchSuggestions(), 200);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [searchQuery]);
+
+  const getSearchSuggestions = async () => {
+    const res = await fetch(YOUTUBE_SEARCH_API + searchQuery);
+    const data = await res.json();
+    console.log(data[1]);
+    setSuggetsions(data[1]);
+  };
+
   const dispatch = useDispatch();
+
   const toggleMenuHandler = () => {
     dispatch(toggleMenu());
   };
@@ -25,14 +50,34 @@ const Header = () => {
           />
         </a>
       </div>
-      <div className="col-span-10 text-center px-10">
-        <input
-          className="w-1/2 border border-gray-400 p-2 rounded-l-full "
-          type="text"
-        />
-        <button className="border border-gray-400 py-2 px-5 bg-gray-100 rounded-r-full">
-          🔍
-        </button>
+      <div className="relative col-span-10 px-10">
+        <div className="text-center">
+          <input
+            className="px-5 w-1/2 border border-gray-400 p-2 rounded-l-full "
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setShowSuggetsions(true)}
+            onBlur={() => setShowSuggetsions(false)}
+          />
+          <button className="border border-gray-400 py-2 px-5 bg-gray-100 rounded-r-full">
+            🔍
+          </button>
+        </div>
+        {suggetsions.length > 0 && showSuggetsions && (
+          <div className="absolute fixed bg-white ml-[270px] py-2 px-2 w-[37.5rem] rounded-xl shadow-lg border border-gray-300">
+            <ul>
+              {suggetsions.map((s) => (
+                <li
+                  key={s}
+                  className="py-2 px-3 cursor-pointer hover:bg-gray-100 rounded-lg "
+                >
+                  🔍 {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
       <div className="col-span-1">
         <img
